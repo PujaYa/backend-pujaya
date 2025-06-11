@@ -8,10 +8,6 @@
     ],
     "routes": [
         {
-            "src": "/docs/?(.*)",
-            "dest": "dist/src/main.js"
-        },
-        {
             "src": "/docs/swagger-ui.css",
             "dest": "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css"
         },
