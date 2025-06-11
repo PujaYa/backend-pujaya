@@ -8,7 +8,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors();
-  app.setGlobalPrefix('api');
+  // app.setGlobalPrefix('api');
   app.use((req, res, next) => {
     console.log(`DEBUG: Solicitud recibida - Método: ${req.method}, URL: ${req.url}`);
     next();
@@ -31,7 +31,7 @@ async function bootstrap() {
     .build()
 
   const document = SwaggerModule.createDocument(app, confitSwagger)
-  SwaggerModule.setup('docs', app, document)
+  SwaggerModule.setup('api', app, document)
 
   const port = process.env.PORT ?? 3001;
   await app.listen(port);
