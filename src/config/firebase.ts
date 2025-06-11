@@ -5,6 +5,7 @@ interface FirebaseConfig {
 }
 
 export default registerAs('firebase', (): FirebaseConfig => {
+  console.log(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
 
   const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
 

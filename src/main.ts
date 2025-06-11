@@ -9,6 +9,10 @@ async function bootstrap() {
 
   app.enableCors();
   app.setGlobalPrefix('api');
+  app.use((req, res, next) => {
+    console.log(`DEBUG: Solicitud recibida - Método: ${req.method}, URL: ${req.url}`);
+    next();
+  });
   // app.useGlobalPipes(new ValidationPipe())
   const confitSwagger = new DocumentBuilder()
     .setTitle('PujaYa API')
@@ -16,7 +20,8 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth(
       {
-        type:'http',
+
+        type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
         in: 'header',
@@ -26,8 +31,8 @@ async function bootstrap() {
     .build()
 
   const document = SwaggerModule.createDocument(app, confitSwagger)
-  SwaggerModule.setup('api', app, document)
-  
+  SwaggerModule.setup('docs', app, document)
+
   const port = process.env.PORT ?? 3001;
   await app.listen(port);
 }
