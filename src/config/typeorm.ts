@@ -24,7 +24,7 @@ const config = {
   database: process.env.DB_NAME,
   autoLoadEntities: true,
   entities: [User, Auction, Product, Category, Bid],
-  synchronize: isDevelopment, // Only enable in development
+  synchronize: false, // Only enable in development
   dropSchema: false, // Never drop schema automatically
   // Disable SSL for local connections
   ssl: isLocalConnection
