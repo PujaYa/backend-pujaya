@@ -95,6 +95,28 @@ export class UsersService {
     }
   }
 
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async downgradeExpiredPremiumUsers() {
+    const now = new Date();
+    const users = await this.usersRepository.findAll();
+    for (const user of users) {
+      if (
+        user.role === UserRole.PREMIUM &&
+        user.subscriptionEndDate &&
+        user.subscriptionEndDate < now
+      ) {
+        await this.usersRepository.update(user.id, {
+          role: UserRole.REGULAR,
+          subscriptionStatus: null,
+          subscriptionEndDate: null,
+          stripeSubscriptionId: null,
+        });
+        // Opcional: notificar al usuario por email
+        // await this.emailService.sendUpdateNotification(user.email, user.name, { role: UserRole.REGULAR });
+      }
+    }
+  }
+
   // Funcion para cambiar role
   async setUserRole(uid: string, role: UserRole): Promise<void> {
     try {
