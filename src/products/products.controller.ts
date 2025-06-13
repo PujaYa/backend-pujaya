@@ -24,7 +24,7 @@ import { FilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 @Controller('products')
 @ApiTags('Products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(private readonly productsService: ProductsService) { }
 
   @ApiOperation({ summary: 'Crear producto' })
   @ApiConsumes('multipart/form-data')
@@ -69,20 +69,7 @@ export class ProductsController {
   @UseInterceptors(FilesInterceptor('files', 3))
   @Post()
   create(
-    @UploadedFiles(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({
-            maxSize: 200 * 1024,
-            message: 'La imagen debe pesar menos de 200kb',
-          }),
-          new FileTypeValidator({
-            fileType: /(jpg|jpeg|png|webp)$/,
-          }),
-        ],
-        fileIsRequired: false,
-      }),
-    )
+    @UploadedFiles()
     files: Express.Multer.File[],
     @Body() createProductDto: CreateProductDto,
   ) {
@@ -139,7 +126,7 @@ export class ProductsController {
       mimetype: f.mimetype,
       size: f.size
     })));
-  
+
     console.log('--- [BACKEND] /products/upload llamado ---');
     if (!files || files.length === 0) {
       console.error('No se recibió ningún archivo en el endpoint');
@@ -177,7 +164,7 @@ export class ProductsController {
         },
       },
     },
-  }) 
+  })
   async uploadSingleImage(
     @UploadedFile()
     file: Express.Multer.File,
