@@ -68,4 +68,62 @@ export class BidsService {
       user: bid.bidder ? { id: bid.bidder.id, name: bid.bidder.name } : null,
     }));
   }
+
+  async getBidsByUser(userId: string, onlyActive = false) {
+    if (!userId) throw new BadRequestException('userId is required');
+    const bids = await this.bidsRepository.find({
+      where: { bidder: { id: userId } },
+      relations: ['auction', 'auction.product', 'auction.owner'],
+      order: { createdAt: 'DESC' },
+    });
+    // Agrupar por subasta y quedarse con la puja más alta del usuario en cada una
+    const auctionsMap = new Map();
+    for (const bid of bids) {
+      // Recargar la subasta para asegurar currentHighestBid actualizado
+      const auction = await this.auctionsRepository.findOne(bid.auction.id);
+      if (!auction) continue;
+      // Si solo queremos activas, filtrar aquí
+      if (
+        onlyActive &&
+        (!auction.isActive || new Date(auction.endDate) <= new Date())
+      )
+        continue;
+      const auctionId = auction.id;
+      if (
+        !auctionsMap.has(auctionId) ||
+        bid.amount > auctionsMap.get(auctionId).myBid
+      ) {
+        // Calcular el currentHighestBid igual que en findOne
+        let currentHighestBid = 0;
+        if (auction.bids && auction.bids.length > 0) {
+          currentHighestBid = Math.max(
+            ...auction.bids.map((b) => Number(b.amount)),
+          );
+        } else if (auction.product && auction.product.initialPrice) {
+          currentHighestBid = Number(auction.product.initialPrice);
+        }
+        auctionsMap.set(auctionId, {
+          auctionId: auction.id,
+          title: auction.name,
+          category: auction.product?.category?.categoryName || '',
+          image: auction.product?.imgProduct?.[0] || '',
+          myBid: Math.floor(Number(bid.amount)),
+          currentBid: Math.floor(Number(currentHighestBid)),
+          timeLeft: auction.endDate ? this.getTimeLeft(auction.endDate) : '',
+        });
+      }
+    }
+    return Array.from(auctionsMap.values());
+  }
+
+  // Helper para calcular el tiempo restante en formato "2h 15m"
+  private getTimeLeft(endDate: Date): string {
+    const now = new Date();
+    const end = new Date(endDate);
+    const diffMs = end.getTime() - now.getTime();
+    if (diffMs <= 0) return 'Ended';
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${minutes}m`;
+  }
 }
