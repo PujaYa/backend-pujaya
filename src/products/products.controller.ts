@@ -127,16 +127,12 @@ export class ProductsController {
     )
     files: Express.Multer.File[],
   ) {
-    console.error('Detalles del archivo recibido:', files[0].originalname);
-    console.error('Detalles del archivo recibido:', files[0].mimetype);
-    console.error('Detalles del archivo recibido:', files[0].size);
-    console.error('Detalles del archivo recibido:', files[0].buffer);
-    console.error('Detalles del archivo recibido:', files[0].fieldname);
-    console.error('Detalles del archivo recibido:', files[0].filename);
-    console.error('Detalles del archivo recibido:', files[0].path);
-    console.error('Detalles del archivo recibido:', files[0].encoding);
-    console.error('Detalles del archivo recibido:', files[0].stream);
-    console.error('Detalles del archivo recibido:', files[0].originalname);
+    
+    console.error('Detalles del archivo recibido (antes de validación manual):', files.map(f => ({
+      originalname: f.originalname,
+      mimetype: f.mimetype,
+      size: f.size
+    })));
   
     console.log('--- [BACKEND] /products/upload llamado ---');
     if (!files || files.length === 0) {
