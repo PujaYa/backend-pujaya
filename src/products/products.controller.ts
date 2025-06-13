@@ -120,19 +120,24 @@ export class ProductsController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /^image\/(jpg|jpeg|png|webp)$/ }),
+          new FileTypeValidator({ fileType: /^(image\/(jpg|jpeg|png|webp)|image\/jpeg)$/ }),
         ],
         fileIsRequired: true,
       }),
     )
     files: Express.Multer.File[],
   ) {
-    console.error('Detalles del archivo recibido:', files.map(f => ({
-      originalname: f.originalname,
-      mimetype: f.mimetype,
-      size: f.size
-    })));
-    console.log(files);
+    console.error('Detalles del archivo recibido:', files[0].originalname);
+    console.error('Detalles del archivo recibido:', files[0].mimetype);
+    console.error('Detalles del archivo recibido:', files[0].size);
+    console.error('Detalles del archivo recibido:', files[0].buffer);
+    console.error('Detalles del archivo recibido:', files[0].fieldname);
+    console.error('Detalles del archivo recibido:', files[0].filename);
+    console.error('Detalles del archivo recibido:', files[0].path);
+    console.error('Detalles del archivo recibido:', files[0].encoding);
+    console.error('Detalles del archivo recibido:', files[0].stream);
+    console.error('Detalles del archivo recibido:', files[0].originalname);
+  
     console.log('--- [BACKEND] /products/upload llamado ---');
     if (!files || files.length === 0) {
       console.error('No se recibió ningún archivo en el endpoint');
