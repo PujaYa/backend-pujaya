@@ -170,4 +170,35 @@ export class ProductsController {
     }
     return { urls };
   }
+
+  @Post('single')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Imagen en formato JPG, PNG o WEBP',
+        },
+      },
+    },
+  }) 
+  async uploadSingleImage(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
+          new FileTypeValidator({ fileType: /^(image\/(jpg|jpeg|png|webp)|image\/jpeg)$/ }),
+        ],
+        fileIsRequired: true,
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    const img = await this.productsService.uploadImage(file);
+    return img?.secure_url;
+  }
 }
