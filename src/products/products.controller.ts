@@ -108,7 +108,11 @@ export class ProductsController {
       type: 'object',
       properties: {
         file: {
-          type: 'string',
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
           format: 'binary',
           description: 'Imagen en formato JPG, PNG o WEBP',
         },
@@ -120,13 +124,6 @@ export class ProductsController {
     @UploadedFiles()
     files: Express.Multer.File[],
   ) {
-
-    console.error('Detalles del archivo recibido (antes de validación manual):', files.map(f => ({
-      originalname: f.originalname,
-      mimetype: f.mimetype,
-      size: f.size
-    })));
-
     console.log('--- [BACKEND] /products/upload llamado ---');
     if (!files || files.length === 0) {
       console.error('No se recibió ningún archivo en el endpoint');
