@@ -130,15 +130,7 @@ export class ProductsController {
     },
   })
   async uploadImages(
-    @UploadedFiles(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /^(image\/(jpg|jpeg|png|webp)|image\/jpeg)$/ }),    
-        ],
-        fileIsRequired: true,
-      }),
-    )
+    @UploadedFiles()
     files: Express.Multer.File[],
   ) {
 
@@ -187,15 +179,7 @@ export class ProductsController {
     },
   }) 
   async uploadSingleImage(
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /^(image\/(jpg|jpeg|png|webp)|image\/jpeg)$/ }),
-        ],
-        fileIsRequired: true,
-      }),
-    )
+    @UploadedFile()
     file: Express.Multer.File,
   ) {
     const img = await this.productsService.uploadImage(file);
