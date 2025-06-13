@@ -115,19 +115,33 @@ export class ProductsController {
 
   @Post('upload')
   @UseInterceptors(FilesInterceptor('file', 5, { limits: { fileSize: 1024 * 1024 * 5 } })) // hasta 5 imágenes
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Imagen en formato JPG, PNG o WEBP',
+        },
+      },
+      required: ['file'],
+    },
+  })
   async uploadImages(
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /^(image\/(jpg|jpeg|png|webp)|image\/jpeg)$/ }),
+          new FileTypeValidator({ fileType: /^(image\/(jpg|jpeg|png|webp)|image\/jpeg)$/ }),    
         ],
         fileIsRequired: true,
       }),
     )
     files: Express.Multer.File[],
   ) {
-    
+
     console.error('Detalles del archivo recibido (antes de validación manual):', files.map(f => ({
       originalname: f.originalname,
       mimetype: f.mimetype,
