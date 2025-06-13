@@ -114,19 +114,20 @@ export class ProductsController {
   }
 
   @Post('upload')
-  @UseInterceptors(FilesInterceptor('file', 5)) // hasta 5 imágenes
+  @UseInterceptors(FilesInterceptor('file', 5, { limits: { fileSize: 1024 * 1024 * 5 } })) // hasta 5 imágenes
   async uploadImages(
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp)$/ }),
+          new FileTypeValidator({ fileType: /^image\/(jpg|jpeg|png|webp)$/ }),
         ],
         fileIsRequired: true,
       }),
     )
     files: Express.Multer.File[],
   ) {
+    console.log(files);
     console.log('--- [BACKEND] /products/upload llamado ---');
     if (!files || files.length === 0) {
       console.error('No se recibió ningún archivo en el endpoint');
