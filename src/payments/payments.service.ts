@@ -12,6 +12,7 @@ import { UsersService } from '../users/users.service';
 import { Response, Request } from 'express';
 import { UserRole } from '../users/types/roles';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { UpdateSubscriptionDto } from './dto/update-suscription.dto';
 
 @Injectable()
 export class PaymentsService {
@@ -33,17 +34,25 @@ export class PaymentsService {
     plan: 'monthly' | 'annual',
     userId?: string,
   ) {
-    const paymentIntent = await this.stripe.paymentIntents.create({
-      amount,
-      currency,
-      metadata: {
-        plan,
-        userId: userId || '',
-      },
-    });
-    return {
-      clientSecret: paymentIntent.client_secret,
-    };
+    try {
+      const paymentIntent = await this.stripe.paymentIntents.create({
+        amount,
+        currency,
+        metadata: {
+          plan,
+          userId: userId || '',
+        },
+      });
+      return {
+        clientSecret: paymentIntent.client_secret,
+      };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Error al crear el payment intent:', error.message);
+        throw new BadRequestException('Error: ' + error.message);
+      }
+      throw new BadRequestException('Error Unknown');
+    }
   }
 
   async handleStripeWebhook(req: Request, res: Response) {
@@ -135,6 +144,39 @@ export class PaymentsService {
         subscriptionStatus: 'expired',
         subscriptionEndDate: null,
       });
+    }
+  }
+
+  async updateSubscription(body: UpdateSubscriptionDto) {
+    try {
+      const subscription = await this.stripe.paymentIntents.retrieve(body.paymentIntentId);
+      if (subscription.status === 'succeeded') {
+        const user = await this.usersService.findOne(body.userId);
+        if (user && body.plan === 'monthly') {
+          const subscriptionEndDate = new Date();
+          subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+          await this.usersService.setUserRole(user.firebaseUid, UserRole.PREMIUM);
+          await this.usersService.update(user.id, {
+            role: UserRole.PREMIUM,
+            subscriptionEndDate: subscriptionEndDate,
+            subscriptionStatus: 'active',
+          });
+        }
+        if (user && body.plan === 'annual') {
+          const subscriptionEndDate = new Date();
+          subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
+          await this.usersService.setUserRole(user.firebaseUid, UserRole.PREMIUM);
+          await this.usersService.update(user.id, {
+            role: UserRole.PREMIUM,
+            subscriptionEndDate: subscriptionEndDate,
+            subscriptionStatus: 'active',
+          });
+        }
+      }
+      return { message: 'Subscription updated successfully' };
+    } catch (error) {
+      console.error('Error al actualizar la suscripción:', error);
+      throw new BadRequestException('Error al actualizar la suscripción');
     }
   }
 }
