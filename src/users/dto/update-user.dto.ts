@@ -5,5 +5,5 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
   subscriptionStatus?: string;
-  subscriptionEndDate?: Date;
+  subscriptionEndDate?: Date | null;
 }
