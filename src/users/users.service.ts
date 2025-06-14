@@ -154,7 +154,7 @@ export class UsersService {
 
   async uploadProfileImage(file: Express.Multer.File, id: string) {
     const user = await this.usersRepository.findOne(id);
-    console.log('user', user)
+    console.log('user', user);
     if (!user) {
       throw new BadRequestException('User not found');
     }
@@ -163,7 +163,11 @@ export class UsersService {
       throw new BadRequestException('Could not upload the profile image');
     }
     await this.usersRepository.update(id, { imgProfile: newUrl });
-    console.log('newUrl', newUrl)
+    console.log('newUrl', newUrl);
     return newUrl;
+  }
+
+  async findPremiumExpired(now: Date): Promise<User[]> {
+    return this.usersRepository.findPremiumExpired(now);
   }
 }

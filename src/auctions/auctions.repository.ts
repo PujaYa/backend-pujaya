@@ -275,4 +275,41 @@ export class AuctionsRepository {
   async saveAuction(auction: Auction) {
     return this.auctionsRepository.save(auction);
   }
+
+  async findByUserAndStatus(userId: string, status?: string) {
+    const query = this.auctionsRepository
+      .createQueryBuilder('auction')
+      .leftJoinAndSelect('auction.owner', 'owner')
+      .leftJoinAndSelect('auction.product', 'product')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('auction.bids', 'bids');
+
+    if (status === 'active') {
+      // Subastas activas donde el usuario ha hecho al menos una bid
+      query
+        .where('auction.isActive = true')
+        .andWhere('auction.endDate > NOW()')
+        .andWhere('bids.bidderId = :userId', { userId });
+    } else if (status === 'won') {
+      // Aquí deberías poner la lógica para subastas ganadas por el usuario
+    } else if (status === 'selling') {
+      // Subastas creadas por el usuario
+      query.where('owner.id = :userId', { userId });
+    } else if (status === 'favorites') {
+      // Si tienes favoritos, deberías hacer join con la tabla de favoritos
+    } else if (status === 'history') {
+      // Subastas finalizadas donde el usuario hizo bid
+      query
+        .where('auction.endDate <= NOW()')
+        .andWhere('bids.userId = :userId', { userId });
+    }
+
+    const auctions = await query.getMany();
+    return auctions;
+  }
+
+  // Permite usar QueryBuilder desde fuera
+  createQueryBuilder(alias: string) {
+    return this.auctionsRepository.createQueryBuilder(alias);
+  }
 }
