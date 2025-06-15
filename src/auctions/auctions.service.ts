@@ -186,4 +186,10 @@ export class AuctionsService {
   async removeForAdmin(id: string) {
     return this.auctionsRepository.deleteAuctionByIdForAdmin(id);
   }
+
+  async findByUserAndStatus(userId: string, status?: string) {
+    // Debes implementar la lógica real según tu modelo de datos
+    // Ejemplo básico:
+    return this.auctionsRepository.findByUserAndStatus(userId, status);
+  }
 }

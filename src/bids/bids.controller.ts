@@ -26,8 +26,19 @@ export class BidsController {
   }
 
   @Get()
-  async getBidsByAuction(@Query('auctionId') auctionId: string) {
-    // Devuelve las pujas de la subasta, ordenadas de mayor a menor (más reciente primero)
-    return this.bidsService.getBidsByAuction(auctionId);
+  async getBids(
+    @Query('auctionId') auctionId?: string,
+    @Query('userId') userId?: string,
+    @Query('onlyActive') onlyActive?: string,
+  ) {
+    if (auctionId) {
+      // Devuelve las pujas de la subasta
+      return this.bidsService.getBidsByAuction(auctionId);
+    }
+    if (userId) {
+      // Devuelve las subastas donde el usuario ha hecho bids
+      return this.bidsService.getBidsByUser(userId, onlyActive === 'true');
+    }
+    throw new Error('auctionId or userId query param required');
   }
 }

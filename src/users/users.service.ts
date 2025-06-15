@@ -95,6 +95,28 @@ export class UsersService {
     }
   }
 
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async downgradeExpiredPremiumUsers() {
+    const now = new Date();
+    const users = await this.usersRepository.findAll();
+    for (const user of users) {
+      if (
+        user.role === UserRole.PREMIUM &&
+        user.subscriptionEndDate &&
+        user.subscriptionEndDate < now
+      ) {
+        await this.usersRepository.update(user.id, {
+          role: UserRole.REGULAR,
+          subscriptionStatus: null,
+          subscriptionEndDate: null,
+          stripeSubscriptionId: null,
+        });
+        // Opcional: notificar al usuario por email
+        // await this.emailService.sendUpdateNotification(user.email, user.name, { role: UserRole.REGULAR });
+      }
+    }
+  }
+
   // Funcion para cambiar role
   async setUserRole(uid: string, role: UserRole): Promise<void> {
     try {
@@ -132,7 +154,7 @@ export class UsersService {
 
   async uploadProfileImage(file: Express.Multer.File, id: string) {
     const user = await this.usersRepository.findOne(id);
-    console.log('user', user)
+    console.log('user', user);
     if (!user) {
       throw new BadRequestException('User not found');
     }
@@ -141,7 +163,11 @@ export class UsersService {
       throw new BadRequestException('Could not upload the profile image');
     }
     await this.usersRepository.update(id, { imgProfile: newUrl });
-    console.log('newUrl', newUrl)
+    console.log('newUrl', newUrl);
     return newUrl;
+  }
+
+  async findPremiumExpired(now: Date): Promise<User[]> {
+    return this.usersRepository.findPremiumExpired(now);
   }
 }

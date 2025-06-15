@@ -5,9 +5,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
 import { Readable } from 'stream';
 import cloudinary from '../config/cloudinary';
+import { UserRole } from './types/roles';
 
 @Injectable()
 export class UsersRepository {
@@ -101,7 +102,19 @@ export class UsersRepository {
       const user = await this.repository.findOneBy({ firebaseUid });
       return user;
     } catch (error) {
-      throw new InternalServerErrorException('Error searching for user by Firebase UID');
+      throw new InternalServerErrorException(
+        'Error searching for user by Firebase UID',
+      );
     }
+  }
+
+  async findPremiumExpired(now: Date): Promise<User[]> {
+    return this.repository.find({
+      where: {
+        role: UserRole.PREMIUM,
+        subscriptionEndDate: LessThan(now),
+        subscriptionStatus: 'active',
+      },
+    });
   }
 }

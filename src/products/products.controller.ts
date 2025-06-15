@@ -24,7 +24,7 @@ import { FilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 @Controller('products')
 @ApiTags('Products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(private readonly productsService: ProductsService) { }
 
   @ApiOperation({ summary: 'Crear producto' })
   @ApiConsumes('multipart/form-data')
@@ -69,20 +69,7 @@ export class ProductsController {
   @UseInterceptors(FilesInterceptor('files', 3))
   @Post()
   create(
-    @UploadedFiles(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({
-            maxSize: 200 * 1024,
-            message: 'La imagen debe pesar menos de 200kb',
-          }),
-          new FileTypeValidator({
-            fileType: /(jpg|jpeg|png|webp)$/,
-          }),
-        ],
-        fileIsRequired: false,
-      }),
-    )
+    @UploadedFiles()
     files: Express.Multer.File[],
     @Body() createProductDto: CreateProductDto,
   ) {
@@ -114,17 +101,27 @@ export class ProductsController {
   }
 
   @Post('upload')
-  @UseInterceptors(FilesInterceptor('file', 5)) // hasta 5 imágenes
+  @UseInterceptors(FilesInterceptor('file', 5, { limits: { fileSize: 1024 * 1024 * 5 } })) // hasta 5 imágenes
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+          format: 'binary',
+          description: 'Imagen en formato JPG, PNG o WEBP',
+        },
+      },
+      required: ['file'],
+    },
+  })
   async uploadImages(
-    @UploadedFiles(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp)$/ }),
-        ],
-        fileIsRequired: true,
-      }),
-    )
+    @UploadedFiles()
     files: Express.Multer.File[],
   ) {
     console.log('--- [BACKEND] /products/upload llamado ---');
@@ -148,5 +145,28 @@ export class ProductsController {
       throw new BadRequestException('No fue posible cargar las imágenes');
     }
     return { urls };
+  }
+
+  @Post('single')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Imagen en formato JPG, PNG o WEBP',
+        },
+      },
+    },
+  })
+  async uploadSingleImage(
+    @UploadedFile()
+    file: Express.Multer.File,
+  ) {
+    const img = await this.productsService.uploadImage(file);
+    return img?.secure_url;
   }
 }
