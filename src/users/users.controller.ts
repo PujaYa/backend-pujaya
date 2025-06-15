@@ -90,8 +90,8 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(FirebaseAuthGuard)
+  // @Roles(UserRole.ADMIN)
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     try {
       const user = await this.usersService.update(id, updateUserDto);
