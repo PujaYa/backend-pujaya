@@ -305,4 +305,31 @@ export class EmailService {
       );
     }
   }
+
+  async sendAuctionEndedNotification(
+    to: string,
+    name: string,
+    auctionTitle: string,
+  ) {
+    try {
+      const template = await this.readTemplate('auction-ended.html');
+      const html = this.replaceTemplateVariables(template, {
+        userName: name,
+        auctionTitle,
+        auctionUrl: `${process.env.WEBSITE_URL}/auctions/${auctionTitle}`,
+        year: new Date().getFullYear(),
+      });
+      await this.transporter.sendMail({
+        from: '"Pujaya" <no-reply@pujaya.com>',
+        to,
+        subject: 'Auction Ended on PujaYa',
+        html,
+      });
+    } catch (error) {
+      console.error('Error sending auction ended notification:', error);
+      throw new InternalServerErrorException(
+        'Could not send the auction ended email',
+      );
+    }
+  }
 }
