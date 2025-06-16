@@ -16,6 +16,8 @@ import firebaseConfig from './config/firebase';
 import { BidsModule } from './bids/bids.module';
 import { PaymentsModule } from './payments/payments.module';
 import stripeConfig from './config/stripe';
+//import { chatGatewayConfig } from './config/chat';
+import { ChatGateway } from './chat/chat.gateway';
 
 @Module({
   imports: [
@@ -45,6 +47,7 @@ import stripeConfig from './config/stripe';
     AdminModule,
     BidsModule,
     PaymentsModule,
+    ChatGateway,
   ],
   controllers: [AdminController],
 })
