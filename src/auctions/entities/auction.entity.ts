@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Product } from 'src/products/entities/product.entity';
-import { User } from 'src/users/entities/user.entity';
-import { Bid } from 'src/bids/entities/bid.entity';
+import { Product } from '../../products/entities/product.entity';
+import { User } from '../../users/entities/user.entity';
+import { Bid } from '../../bids/entities/bid.entity';
 import {
   Column,
   Entity,

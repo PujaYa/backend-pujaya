@@ -6,10 +6,9 @@ import { User } from './entities/user.entity';
 import { UsersRepository } from './users.repository';
 import { EmailModule } from '../emailService/emailService.module';
 import { FirebaseModule } from 'src/firebase-module/firebase-module.module';
-import { ChatGateway } from 'src/chat/chat.gateway';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), EmailModule, FirebaseModule, ChatGateway],
+  imports: [TypeOrmModule.forFeature([User]), EmailModule, FirebaseModule],
   controllers: [UsersController],
   providers: [UsersService, UsersRepository],
   exports: [UsersService, UsersRepository],

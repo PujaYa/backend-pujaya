@@ -6,6 +6,7 @@ import { Auction } from 'src/auctions/entities/auction.entity';
 import { Product } from 'src/products/entities/product.entity';
 import { Category } from 'src/category/entities/category.entity';
 import { Bid } from 'src/bids/entities/bid.entity';
+import { ChatMessage } from 'src/chat/entities/chat-message.entity';
 
 dotenvConfig({ path: '.env.development' });
 
@@ -23,7 +24,7 @@ const config = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   autoLoadEntities: true,
-  entities: [User, Auction, Product, Category, Bid],
+  entities: [User, Auction, Product, Category, Bid, ChatMessage],
   synchronize: false, // Only enable in development
   dropSchema: false, // Never drop schema automatically
   // Disable SSL for local connections
