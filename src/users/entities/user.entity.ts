@@ -1,4 +1,4 @@
-import { Auction } from 'src/auctions/entities/auction.entity';
+import { Auction } from '../../auctions/entities/auction.entity';
 import {
   Column,
   CreateDateColumn,
@@ -89,17 +89,6 @@ export class User {
   })
   role: UserRole;
 
-  @Column({
-    type: 'json',
-    nullable: true,
-  })
-  permissions: {
-    canManageUsers?: boolean;
-    canEditAuctions?: boolean;
-    canDeleteListings?: boolean;
-    suscriptionType?: 'monthly' | 'annual';
-  };
-
   @OneToMany(() => Auction, (auction) => auction.owner)
   auctions: Auction[];
 
@@ -109,5 +98,15 @@ export class User {
   })
   deactivatedAt: Date | null;
 
+  @Column({ type: 'varchar', length: 128, nullable: true })
+  stripeSubscriptionId: string | null;
 
+  @Column({ type: 'varchar', length: 32, nullable: true })
+  subscriptionStatus: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  subscriptionEndDate: Date | null;
+
+  @Column({ type: 'varchar', length: 128, nullable: true })
+  stripeCustomerId: string | null;
 }

@@ -1,6 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn } from 'typeorm';
-import { User } from 'src/users/entities/user.entity';
-import { Auction } from 'src/auctions/entities/auction.entity';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  CreateDateColumn,
+} from 'typeorm';
+import { User } from '../../users/entities/user.entity';
+import { Auction } from '../../auctions/entities/auction.entity';
 
 @Entity('bids')
 export class Bid {
@@ -20,9 +26,9 @@ export class Bid {
   @ManyToOne(() => User)
   bidder: User;
 
-  @ManyToOne(() => Auction, auction => auction.bids)
+  @ManyToOne(() => Auction, (auction) => auction.bids)
   auction: Auction;
 
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
-} 
+}

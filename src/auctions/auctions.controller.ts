@@ -145,4 +145,14 @@ export class AuctionsController {
   removeForAdmin(@Param('id', ParseUUIDPipe) id: string) {
     return this.auctionsService.removeForAdmin(id);
   }
+
+  @Get('user/:userId')
+  @UseGuards(FirebaseAuthGuard)
+  async getUserAuctions(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @Query('status') status?: string,
+  ) {
+    // Puedes implementar la lógica en el service para filtrar por status
+    return this.auctionsService.findByUserAndStatus(userId, status);
+  }
 }

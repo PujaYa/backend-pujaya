@@ -186,4 +186,55 @@ export class AuctionsService {
   async removeForAdmin(id: string) {
     return this.auctionsRepository.deleteAuctionByIdForAdmin(id);
   }
+
+  async findByUserAndStatus(userId: string, status?: string) {
+    // Debes implementar la lógica real según tu modelo de datos
+    // Ejemplo básico:
+    return this.auctionsRepository.findByUserAndStatus(userId, status);
+  }
+
+  // Cron que desactiva subastas cuyo endDate ya pasó
+  @Cron(CronExpression.EVERY_HOUR)
+  async deactivateExpiredAuctions() {
+    const now = new Date();
+    // Buscar todas las subastas activas cuyo endDate ya pasó
+    const expiredAuctions =
+      await this.auctionsRepository.findExpiredActiveAuctions(now);
+    for (const auction of expiredAuctions) {
+      auction.isActive = false;
+      auction.deactivatedAt = now;
+      await this.auctionsRepository.saveAuction(auction);
+      // Notificar al owner
+      if (auction.owner?.email && auction.owner?.name) {
+        await this.emailService.sendAuctionEndedNotification(
+          auction.owner.email,
+          auction.owner.name,
+          auction.name,
+        );
+      }
+      // Notificar a todos los usuarios que pujaron
+      if (auction.bids && auction.bids.length > 0) {
+        const notifiedUsers = new Set();
+        for (const bid of auction.bids) {
+          if (
+            bid.bidder?.email &&
+            bid.bidder?.name &&
+            !notifiedUsers.has(bid.bidder.email)
+          ) {
+            await this.emailService.sendAuctionEndedNotification(
+              bid.bidder.email,
+              bid.bidder.name,
+              auction.name,
+            );
+            notifiedUsers.add(bid.bidder.email);
+          }
+        }
+      }
+    }
+    if (expiredAuctions.length > 0) {
+      console.log(
+        `Se desactivaron ${expiredAuctions.length} subastas expiradas automáticamente y se notificó a los usuarios.`,
+      );
+    }
+  }
 }

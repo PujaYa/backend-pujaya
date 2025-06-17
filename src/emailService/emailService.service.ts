@@ -15,16 +15,30 @@ export class EmailService {
 
   private async readTemplate(templateName: string): Promise<string> {
     try {
-      
-      const srcPath = path.join(process.cwd(), 'src', 'emailService', 'templates', templateName);
-      const distPath = path.join(process.cwd(), 'dist', 'src', 'emailService', 'templates', templateName);
-      
+      const srcPath = path.join(
+        process.cwd(),
+        'src',
+        'emailService',
+        'templates',
+        templateName,
+      );
+      const distPath = path.join(
+        process.cwd(),
+        'dist',
+        'src',
+        'emailService',
+        'templates',
+        templateName,
+      );
+
       if (fs.existsSync(srcPath)) {
         return fs.readFileSync(srcPath, 'utf8');
       } else if (fs.existsSync(distPath)) {
         return fs.readFileSync(distPath, 'utf8');
       } else {
-        throw new Error(`Template ${templateName} not found in either src or dist directories`);
+        throw new Error(
+          `Template ${templateName} not found in either src or dist directories`,
+        );
       }
     } catch (error) {
       console.error(`Error reading template ${templateName}:`, error);
@@ -32,7 +46,10 @@ export class EmailService {
     }
   }
 
-  private replaceTemplateVariables(template: string, variables: Record<string, string | number>): string {
+  private replaceTemplateVariables(
+    template: string,
+    variables: Record<string, string | number>,
+  ): string {
     return Object.entries(variables).reduce((html, [key, value]) => {
       const regex = new RegExp(`{{${key}}}`, 'g');
       return html.replace(regex, String(value));
@@ -44,8 +61,8 @@ export class EmailService {
       const template = await this.readTemplate('welcome.html');
       const html = this.replaceTemplateVariables(template, {
         userName: name,
-        websiteUrl: process.env.WEBSITE_URL || 'https://pujaya.com',
-        year: new Date().getFullYear()
+        websiteUrl: process.env.WEBSITE_URL || '',
+        year: new Date().getFullYear(),
       });
 
       await this.transporter.sendMail({
@@ -61,33 +78,34 @@ export class EmailService {
   }
 
   async sendUpdateNotification(
-    
     to: string,
     name: string,
     updatedFields: Record<string, any>,
   ) {
-    try{
+    try {
       const template = await this.readTemplate('profile-update.html');
-      const fields = Object.entries(updatedFields)
-        .map(([key, value]) => `<li><b>${key}:</b> ${value}</li>`);
-        
+      const fields = Object.entries(updatedFields).map(
+        ([key, value]) => `<li><b>${key}:</b> ${value}</li>`,
+      );
+
       const html = this.replaceTemplateVariables(template, {
         userName: name,
         updatedFields: fields.join(''),
-        year: new Date().getFullYear()
+        year: new Date().getFullYear(),
       });
-     
 
-    await this.transporter.sendMail({
-      from: '"Pujaya" <no-reply@pujaya.com>',
-      to,
-      subject: 'Your Pujaya Profile Has Been Updated',
-      html,
-    });
-  } catch (error) {
-    console.error('Error sending update notification:', error);
-    throw new InternalServerErrorException('Could not send the update notification email');
-  }
+      await this.transporter.sendMail({
+        from: '"Pujaya" <no-reply@pujaya.com>',
+        to,
+        subject: 'Your Pujaya Profile Has Been Updated',
+        html,
+      });
+    } catch (error) {
+      console.error('Error sending update notification:', error);
+      throw new InternalServerErrorException(
+        'Could not send the update notification email',
+      );
+    }
   }
 
   async sendAccountDeactivation(to: string, name: string) {
@@ -97,7 +115,7 @@ export class EmailService {
         userName: name,
         reactivationUrl: `${process.env.WEBSITE_URL}/reactivate-account`,
         supportEmail: process.env.SUPPORT_EMAIL || 'support@pujaya.com',
-        year: new Date().getFullYear()
+        year: new Date().getFullYear(),
       });
 
       await this.transporter.sendMail({
@@ -108,7 +126,9 @@ export class EmailService {
       });
     } catch (error) {
       console.error('Error sending account deactivation email:', error);
-      throw new InternalServerErrorException('Could not send the account deactivation email');
+      throw new InternalServerErrorException(
+        'Could not send the account deactivation email',
+      );
     }
   }
 
@@ -117,16 +137,18 @@ export class EmailService {
     auctionTitle: string,
     name: string,
     startingPrice: number,
-    endDate: Date
+    endDate: Date,
   ) {
     try {
       const template = await this.readTemplate('auction-created.html');
-      
+
       // Generate social share URLs
       const encodedTitle = encodeURIComponent(auctionTitle);
       const auctionUrl = `${process.env.WEBSITE_URL}/auctions/${encodedTitle}`;
-      const shareText = encodeURIComponent(`Check out my auction "${auctionTitle}" on PujaYa!`);
-      
+      const shareText = encodeURIComponent(
+        `Check out my auction "${auctionTitle}" on PujaYa!`,
+      );
+
       const html = this.replaceTemplateVariables(template, {
         userName: name,
         auctionTitle,
@@ -140,7 +162,7 @@ export class EmailService {
           hour: '2-digit',
           minute: '2-digit',
         }),
-        year: new Date().getFullYear()
+        year: new Date().getFullYear(),
       });
 
       await this.transporter.sendMail({
@@ -151,7 +173,9 @@ export class EmailService {
       });
     } catch (error) {
       console.error('Error sending auction creation email:', error);
-      throw new InternalServerErrorException('Could not send the auction creation email');
+      throw new InternalServerErrorException(
+        'Could not send the auction creation email',
+      );
     }
   }
 
@@ -159,11 +183,11 @@ export class EmailService {
     to: string,
     name: string,
     auctionTitle: string,
-    updatedFields?: Record<string, any>
+    updatedFields?: Record<string, any>,
   ) {
     try {
       const template = await this.readTemplate('auction-update.html');
-      
+
       // Format updated fields in HTML
       const formattedFields = updatedFields
         ? Object.entries(updatedFields)
@@ -176,7 +200,7 @@ export class EmailService {
         auctionTitle,
         updatedFields: formattedFields,
         auctionUrl: `${process.env.WEBSITE_URL}/auctions/${auctionTitle}`,
-        year: new Date().getFullYear()
+        year: new Date().getFullYear(),
       });
 
       await this.transporter.sendMail({
@@ -187,7 +211,9 @@ export class EmailService {
       });
     } catch (error) {
       console.error('Error sending auction update notification:', error);
-      throw new InternalServerErrorException('Could not send the auction update notification email');
+      throw new InternalServerErrorException(
+        'Could not send the auction update notification email',
+      );
     }
   }
   async sendAuctionDeletedNotification(
@@ -207,7 +233,6 @@ export class EmailService {
     });
   }
 
-
   async sendBidNotification(
     to: string,
     ownerName: string,
@@ -224,7 +249,7 @@ export class EmailService {
         bidDateTime: new Date().toLocaleString('en-US'),
         bidderName,
         auctionUrl: `${process.env.WEBSITE_URL}/auctions/${auctionTitle}`,
-        year: new Date().getFullYear()
+        year: new Date().getFullYear(),
       });
 
       await this.transporter.sendMail({
@@ -235,25 +260,27 @@ export class EmailService {
       });
     } catch (error) {
       console.error('Error sending bid notification:', error);
-      throw new InternalServerErrorException('Could not send the bid notification email');
+      throw new InternalServerErrorException(
+        'Could not send the bid notification email',
+      );
     }
   }
-
-
 
   async sendProfileUpdateNotification(
     to: string,
     name: string,
-    updatedFields: Record<string, any>
+    updatedFields: Record<string, any>,
   ) {
     try {
       const template = await this.readTemplate('profile-update.html');
-      
+
       // Format updated fields in HTML
       const formattedFields = Object.entries(updatedFields)
         .map(([key, value]) => {
           // Handle sensitive information
-          const displayValue = key.toLowerCase().includes('password') ? '********' : value;
+          const displayValue = key.toLowerCase().includes('password')
+            ? '********'
+            : value;
           return `<p><strong>${key}:</strong> ${displayValue}</p>`;
         })
         .join('');
@@ -262,7 +289,7 @@ export class EmailService {
         userName: name,
         updatedFields: formattedFields,
         profileUrl: `${process.env.WEBSITE_URL}/profile`,
-        year: new Date().getFullYear()
+        year: new Date().getFullYear(),
       });
 
       await this.transporter.sendMail({
@@ -273,7 +300,36 @@ export class EmailService {
       });
     } catch (error) {
       console.error('Error sending profile update notification:', error);
-      throw new InternalServerErrorException('Could not send the profile update notification email');
+      throw new InternalServerErrorException(
+        'Could not send the profile update notification email',
+      );
+    }
+  }
+
+  async sendAuctionEndedNotification(
+    to: string,
+    name: string,
+    auctionTitle: string,
+  ) {
+    try {
+      const template = await this.readTemplate('auction-ended.html');
+      const html = this.replaceTemplateVariables(template, {
+        userName: name,
+        auctionTitle,
+        auctionUrl: `${process.env.WEBSITE_URL}/auctions/${auctionTitle}`,
+        year: new Date().getFullYear(),
+      });
+      await this.transporter.sendMail({
+        from: '"Pujaya" <no-reply@pujaya.com>',
+        to,
+        subject: 'Auction Ended on PujaYa',
+        html,
+      });
+    } catch (error) {
+      console.error('Error sending auction ended notification:', error);
+      throw new InternalServerErrorException(
+        'Could not send the auction ended email',
+      );
     }
   }
 }

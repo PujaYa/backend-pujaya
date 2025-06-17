@@ -14,12 +14,15 @@ import { AdminController } from './admin/admin.controller';
 import { AdminModule } from './admin/admin.module';
 import firebaseConfig from './config/firebase';
 import { BidsModule } from './bids/bids.module';
+import { PaymentsModule } from './payments/payments.module';
+import stripeConfig from './config/stripe';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [typeOrmConfig, firebaseConfig],
+      load: [typeOrmConfig, firebaseConfig, stripeConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -42,6 +45,8 @@ import { BidsModule } from './bids/bids.module';
     FirebaseModule,
     AdminModule,
     BidsModule,
+    PaymentsModule,
+    ChatModule,
   ],
   controllers: [AdminController],
 })
