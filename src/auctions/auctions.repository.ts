@@ -272,6 +272,17 @@ export class AuctionsRepository {
     await this.auctionsRepository.save(auction);
   }
 
+  // Método para buscar subastas activas cuyo endDate ya pasó
+  async findExpiredActiveAuctions(now: Date): Promise<Auction[]> {
+    return this.auctionsRepository.find({
+      where: {
+        isActive: true,
+        endDate: LessThan(now),
+      },
+    });
+  }
+
+  // Método para guardar una subasta
   async saveAuction(auction: Auction) {
     return this.auctionsRepository.save(auction);
   }

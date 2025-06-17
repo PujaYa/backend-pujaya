@@ -1,4 +1,4 @@
-import { Auction } from 'src/auctions/entities/auction.entity';
+import { Auction } from '../../auctions/entities/auction.entity';
 import {
   Column,
   CreateDateColumn,

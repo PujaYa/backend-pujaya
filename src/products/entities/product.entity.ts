@@ -1,5 +1,5 @@
-import { Auction } from 'src/auctions/entities/auction.entity';
-import { Category } from 'src/category/entities/category.entity';
+import { Auction } from '../../auctions/entities/auction.entity';
+import { Category } from '../../category/entities/category.entity';
 import {
   Column,
   Entity,
