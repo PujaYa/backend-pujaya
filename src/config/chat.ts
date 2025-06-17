@@ -1,15 +1,10 @@
-import { IoAdapter } from '@nestjs/platform-socket.io';
-import { ServerOptions } from 'socket.io';
+import { GatewayMetadata } from '@nestjs/websockets';
 
-export class chatGatewayConfig extends IoAdapter {
-    createIOServer(port: number, options?: ServerOptions) {
-        const server = super.createIOServer(port, options);
-        server.path(process.env.WEBSOCKET_PATH || '/chat');
-        server.cors({
-            origin: '*',
-            methods: ['GET', 'POST'],
-            credentials: true,
-        });
-        return server;
-    }
-}
+export const chatGatewayConfig: GatewayMetadata = {
+path: process.env.WEBSOCKET_PATH || '/chat',
+cors: {
+    origin: process.env.WEBSOCKET_ORIGIN?.split(',') || '*',
+    methods: ['GET', 'POST'],
+    credentials: true,
+},
+};
