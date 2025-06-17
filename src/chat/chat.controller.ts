@@ -1,11 +1,22 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { Request } from 'express';
 import { FirebaseAuthGuard } from '../auth/guards/auth.guard';
+import { pusher } from '../config/pusher';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Auction } from '../auctions/entities/auction.entity';
+import { User } from '../users/entities/user.entity';
 
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    @InjectRepository(Auction)
+    private readonly auctionRepository: Repository<Auction>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
 
   // Endpoint para obtener las conversaciones del owner autenticado
   @UseGuards(FirebaseAuthGuard)
@@ -45,4 +56,58 @@ export class ChatController {
       lastmessageat: conv.lastMessageAt,
     }));
   }
+
+  // Endpoint para enviar un mensaje
+  @UseGuards(FirebaseAuthGuard)
+  @Post('send')
+  async sendMessage(@Req() req: Request, @Body() body: any) {
+    const senderId = (req as any).user?.id;
+    if (!senderId) throw new Error('No sender id found in request');
+    const { auctionId, receiverId, text, room } = body;
+    // Buscar entidades necesarias
+    const [auction, sender, receiver] = await Promise.all([
+      this.auctionRepository.findOne({ where: { id: auctionId } }),
+      this.userRepository.findOne({ where: { id: senderId } }),
+      this.userRepository.findOne({ where: { id: receiverId } }),
+    ]);
+    if (!auction || !sender || !receiver) throw new Error('Invalid data');
+    // Guardar mensaje
+    const saved = await this.chatService.saveMessage({
+      auction,
+      sender,
+      receiver,
+      text,
+      room,
+    });
+    // Emitir por Pusher
+    await pusher.trigger(room, 'message', {
+      sender: sender.name,
+      senderId: sender.id,
+      receiverId: receiver.id,
+      text,
+      createdAt: saved.createdAt,
+    });
+    return { success: true };
+  }
+
+  // Endpoint para obtener el historial de mensajes de un room
+  @UseGuards(FirebaseAuthGuard)
+  @Get('history')
+  async getChatHistory(@Req() req: Request) {
+    const room = req.query.room as string;
+    if (!room) throw new Error('No room provided');
+    const messages = await this.chatService.getMessagesByRoom(room);
+    // Formatear mensajes para el frontend
+    return Array.isArray(messages)
+      ? messages.map((msg) => ({
+          sender: msg.sender?.name || 'Unknown',
+          senderId: msg.sender?.id,
+          receiverId: msg.receiver?.id,
+          text: msg.text,
+          createdAt: msg.createdAt,
+        }))
+      : [];
+  }
 }
+
+// Toda la lógica WebSocket/Socket.IO está comentada en chat.gateway.ts
