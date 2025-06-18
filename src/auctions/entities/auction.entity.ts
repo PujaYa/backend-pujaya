@@ -60,6 +60,12 @@ export class Auction {
   @Column({ type: 'uuid', nullable: true })
   currentHighestBidderId: string;
 
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  latitude: number | null;
+
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  longitude: number | null;
+
   // Helper method to check if auction has any bids
   hasBids(): boolean {
     return this.bids && this.bids.length > 0;
