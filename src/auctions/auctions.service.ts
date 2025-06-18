@@ -36,6 +36,9 @@ export class AuctionsService {
     category?: string,
     sort?: string,
     sellerId?: string,
+    lat?: number,
+    lng?: number,
+    radius: number = 10,
   ) {
     return this.auctionsRepository.findAll(
       limit,
@@ -44,6 +47,9 @@ export class AuctionsService {
       category,
       sort,
       sellerId,
+      lat,
+      lng,
+      radius,
     );
   }
 

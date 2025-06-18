@@ -52,7 +52,10 @@ export class AuctionsController {
     @Query('search') search?: string,
     @Query('category') category?: string,
     @Query('sort') sort?: string,
-    @Query('seller') sellerId?: string, // <-- Nuevo parámetro seller
+    @Query('seller') sellerId?: string,
+    @Query('lat') lat?: number,
+    @Query('lng') lng?: number,
+    @Query('radius') radius: number = 10, // default 10 km
   ) {
     return this.auctionsService.findAll(
       limit,
@@ -61,6 +64,9 @@ export class AuctionsController {
       category,
       sort,
       sellerId,
+      lat,
+      lng,
+      radius,
     );
   }
 
