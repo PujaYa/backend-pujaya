@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsDateString, IsOptional, IsUUID } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsDateString,
+  IsOptional,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateAuctionDto {
   @ApiProperty({
@@ -37,4 +43,20 @@ export class CreateAuctionDto {
   @IsUUID()
   @IsOptional()
   productId?: string;
+
+  @ApiProperty({
+    required: true,
+    description: 'Latitude of the auction location',
+    example: -34.6037,
+  })
+  @IsNotEmpty()
+  latitude: number;
+
+  @ApiProperty({
+    required: true,
+    description: 'Longitude of the auction location',
+    example: -58.3816,
+  })
+  @IsNotEmpty()
+  longitude: number;
 }

@@ -33,6 +33,8 @@ export class AuctionsRepository {
       description: createAuctionDto.description,
       endDate: new Date(createAuctionDto.endDate),
       owner: user,
+      latitude: createAuctionDto.latitude,
+      longitude: createAuctionDto.longitude,
     });
 
     await this.auctionsRepository.save(newAuction);
@@ -73,6 +75,9 @@ export class AuctionsRepository {
     category?: string,
     sort?: string,
     sellerId?: string,
+    lat?: number,
+    lng?: number,
+    radius: number = 10,
   ): Promise<{ auctions: Auction[]; total: number }> {
     const query = this.auctionsRepository
       .createQueryBuilder('auction')
@@ -100,6 +105,23 @@ export class AuctionsRepository {
     // Filtro por vendedor (sellerId)
     if (sellerId) {
       query.andWhere('owner.id = :sellerId', { sellerId });
+    }
+
+    // Location filter (Haversine formula)
+    if (lat !== undefined && lng !== undefined && radius !== undefined) {
+      // 6371 = Earth radius in km
+      query.andWhere(
+        `
+        (auction.latitude IS NOT NULL AND auction.longitude IS NOT NULL AND
+          6371 * 2 * ASIN(SQRT(
+            POWER(SIN((:lat - auction.latitude) * PI() / 180 / 2), 2) +
+            COS(:lat * PI() / 180) * COS(auction.latitude * PI() / 180) *
+            POWER(SIN((:lng - auction.longitude) * PI() / 180 / 2), 2)
+          )) <= :radius
+        )
+      `,
+        { lat, lng, radius },
+      );
     }
 
     // Ordenamiento
